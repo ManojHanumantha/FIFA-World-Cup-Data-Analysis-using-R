@@ -1,1 +1,38 @@
+---
+title: "MS5130 Assignment 3"
+author: "Manoj Hanumantha"
+format: html
+---
+
+```{r}
+
+options(repos = "https://cloud.r-project.org")  # Set CRAN mirror
+install.packages('readr')
+install.packages('tidyverse')
+library(tidyr)
+library(dplyr)
+library(leaflet)
+library(plotly)
+library(ggplot2)
+library(forcats)
+
+# Load datasets
+matches <- read.csv("matches.csv")
+team_appearances <- read.csv("team_appearances.csv")
+player_appearances <- read.csv("player_appearances.csv")
+goals <- read.csv("goals.csv")
+
+# Combine datasets using common columns
+combined_data <- matches %>%
+  left_join(team_appearances, by = "match_id") %>%
+  left_join(player_appearances, by = "match_id") %>%
+  left_join(goals, by = "match_id")
+
+View(combined_data)
+
+```
+
+
+
+
 
