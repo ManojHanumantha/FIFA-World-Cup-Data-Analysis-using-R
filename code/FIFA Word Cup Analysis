@@ -9,12 +9,25 @@ format: html
 options(repos = "https://cloud.r-project.org")  # Set CRAN mirror
 install.packages('readr')
 install.packages('tidyverse')
+install.packages("interactions")
+install.packages("ISLR")
+install.packages("gam")
 library(tidyr)
 library(dplyr)
 library(leaflet)
 library(plotly)
 library(ggplot2)
 library(forcats)
+library(reader)
+library(gam)
+library(ISLR)
+library(interactions)
+
+# Check the current working directory
+getwd()
+
+# Set the working directory to the folder where the datasets are present
+setwd("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3 Datasets/FIFA")
 
 # Load datasets
 matches <- read.csv("matches.csv")
@@ -29,6 +42,46 @@ combined_data <- matches %>%
   left_join(goals, by = "match_id")
 
 View(combined_data)
+
+# Exploratory Data Analysis (EDA)
+
+install.packages("corrplot")
+library(corrplot)
+
+# Check for missing values
+missing_values <- colSums(is.na(combined_data))
+print(missing_values)
+
+# Visualizing distribution of home_team_score and away_team_score
+plot <- ggplot(combined_data, aes(x = home_team_score, y = away_team_score)) +
+  geom_point() +
+  labs(x = "Home Team Score", y = "Away Team Score", title = "Distribution of Home and Away Team Scores") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+# Correlation matrix of match statistics including home_team_score, away_team_score, goals_for, and goals_against
+correlation_matrix <- cor(combined_data[, c("home_team_score", "away_team_score", "goals_for", "goals_against")])
+corrplot(correlation_matrix, method = "color")
+
+# Boxplot of home_team_score and away_team_score by result
+plot <- ggplot(combined_data, aes(x = result.x, y = home_team_score)) +
+  geom_boxplot() +
+  labs(x = "Result", y = "Home Team Score", title = "Boxplot of Home Team Score by Result") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+plot <- ggplot(combined_data, aes(x = result.x, y = away_team_score)) +
+  geom_boxplot() +
+  labs(x = "Result", y = "Away Team Score", title = "Boxplot of Away Team Score by Result") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+# Scatterplot of goals_for vs. goals_against
+plot <- ggplot(combined_data, aes(x = goals_for, y = goals_against)) +
+  geom_point() +
+  labs(x = "Goals For", y = "Goals Against", title = "Scatterplot of Goals For vs. Goals Against") +
+  theme_minimal()
+plotly::ggplotly(plot)
 
 ```
 
