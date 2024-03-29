@@ -27,7 +27,7 @@ library(interactions)
 getwd()
 
 # Set the working directory to the folder where the datasets are present
-setwd("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3 Datasets/FIFA")
+setwd("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3/FIFA")
 
 # Load datasets
 matches <- read.csv("matches.csv")
@@ -37,11 +37,15 @@ goals <- read.csv("goals.csv")
 
 # Combine datasets using common columns
 combined_data <- matches %>%
-  left_join(team_appearances, by = "match_id") %>%
-  left_join(player_appearances, by = "match_id") %>%
-  left_join(goals, by = "match_id")
+  inner_join(team_appearances, by = "match_id") %>%
+  inner_join(player_appearances, by = "match_id") %>%
+  inner_join(goals, by = "match_id")
 
 View(combined_data)
+head(combined_data)
+str(combined_data)
+summary(combined_data)
+colnames(combined_data)
 
 # Exploratory Data Analysis (EDA)
 
