@@ -56,6 +56,18 @@ library(corrplot)
 missing_values <- colSums(is.na(combined_data))
 print(missing_values)
 
+# Histograms to check normality of predictor variables
+histograms <- combined_data %>%
+  select(home_team_score, away_team_score, goals_for, goals_against) %>%
+  gather() %>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 20, fill = "skyblue", color = "black", alpha = 0.8) +
+  facet_wrap(~key, scales = "free") +
+  labs(x = "Value", y = "Frequency", title = "Histograms of Predictor Variables") +
+  theme_minimal()
+
+plotly::ggplotly(histograms)
+
 # Visualizing distribution of home_team_score and away_team_score
 plot <- ggplot(combined_data, aes(x = home_team_score, y = away_team_score)) +
   geom_point() +
@@ -86,6 +98,59 @@ plot <- ggplot(combined_data, aes(x = goals_for, y = goals_against)) +
   labs(x = "Goals For", y = "Goals Against", title = "Scatterplot of Goals For vs. Goals Against") +
   theme_minimal()
 plotly::ggplotly(plot)
+
+# Modeling
+
+# Load required libraries
+library(dplyr)
+library(mgcv)
+
+# Convert output variable result to a factor with specified levels
+combined_data$result.y <- factor(combined_data$result.y, levels = c("win", "lose", "draw"))
+
+# Check unique values in result.y
+unique(model_data$result.y)
+
+# Check for missing values in result.y
+sum(is.na(model_data$result.y))
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Sample size for training data
+train_size <- floor(0.7 * nrow(combined_data))
+
+# Generate random indices for training data
+train_indices <- sample(seq_len(nrow(combined_data)), size = train_size)
+
+# Create training and test datasets
+train_data <- combined_data[train_indices, ]
+test_data <- combined_data[-train_indices, ]
+
+# Fit the model using training data
+library(nnet)
+
+# Check unique values in result.y in train_data
+unique(train_data$result.y)
+
+# Check if the "draw" category is present in the model
+"draw" %in% levels(train_data$result.y)
+
+# Set the reference category to "draw"
+train_data$result.y <- relevel(train_data$result.y, ref = "draw")
+
+# Fit the multinomial logistic regression model
+model <- multinom(result.y ~ home_team_score + away_team_score + goals_for,
+                  data = train_data)
+
+# Predict on test data
+predictions <- predict(model, newdata = test_data)
+
+# Check levels of result.y after releveling to make sure draw category is present
+levels(train_data$result.y)
+
+# Summary of the model
+summary(model)
 
 ```
 
