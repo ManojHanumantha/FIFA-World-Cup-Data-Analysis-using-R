@@ -1,0 +1,157 @@
+options(repos = "https://cloud.r-project.org")  # Set CRAN mirror
+install.packages('readr')
+install.packages('tidyverse')
+install.packages("ISLR")
+install.packages("gam")
+install.packages("interactions")
+library(readr)
+library(tidyr)
+library(dplyr)
+library(leaflet)
+library(plotly)
+library(ggplot2)
+library(forcats)
+library(gam)
+library(ISLR)
+library(interactions)
+
+getwd()
+setwd("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3/FIFA")
+
+#Import the datasets
+matches <- read.csv("matches.csv")
+team_appearances <- read.csv("team_appearances.csv")
+player_appearances <- read.csv("player_appearances.csv")
+goals <- read.csv("goals.csv")
+
+# Combine datasets using common columns
+combined_data <- matches %>%
+  inner_join(team_appearances, by = "match_id") %>%
+  inner_join(player_appearances, by = "match_id") %>%
+  inner_join(goals, by = "match_id")
+
+View(combined_data)
+head(combined_data)
+str(combined_data)
+summary(combined_data)
+colnames(combined_data)
+
+# Exploratory Data Analysis (EDA)
+
+install.packages("corrplot")
+library(corrplot)
+
+# Histograms to check normality of predictor variables
+histograms <- combined_data %>%
+  select(home_team_score, away_team_score, goals_for, goals_against) %>%
+  gather() %>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 20, fill = "skyblue", color = "black", alpha = 0.8) +
+  facet_wrap(~key, scales = "free") +
+  labs(x = "Value", y = "Frequency", title = "Histograms of Predictor Variables") +
+  theme_minimal()
+
+plotly::ggplotly(histograms)
+
+
+# Check for missing values
+missing_values <- colSums(is.na(combined_data))
+print(missing_values)
+
+# Visualizing distribution of home_team_score and away_team_score
+plot <- ggplot(combined_data, aes(x = home_team_score, y = away_team_score)) +
+  geom_point() +
+  labs(x = "Home Team Score", y = "Away Team Score", title = "Distribution of Home and Away Team Scores") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+# Correlation matrix correlation matrix of match statistics including home_team_score, away_team_score, goals_for, and goals_against.
+correlation_matrix <- cor(combined_data[, c("home_team_score", "away_team_score", "goals_for", "goals_against")])
+corrplot(correlation_matrix, method = "color")
+
+# Boxplot of home_team_score and away_team_score by result
+plot <- ggplot(combined_data, aes(x = result.x, y = home_team_score)) +
+  geom_boxplot() +
+  labs(x = "Result", y = "Home Team Score", title = "Boxplot of Home Team Score by Result") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+plot <- ggplot(combined_data, aes(x = result.x, y = away_team_score)) +
+  geom_boxplot() +
+  labs(x = "Result", y = "Away Team Score", title = "Boxplot of Away Team Score by Result") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+# Scatterplot of goals_for vs. goals_against
+plot <- ggplot(combined_data, aes(x = goals_for, y = goals_against)) +
+  geom_point() +
+  labs(x = "Goals For", y = "Goals Against", title = "Scatterplot of Goals For vs. Goals Against") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+# Load required libraries
+library(dplyr)
+library(mgcv)
+
+# Convert it to a factor with specified levels
+combined_data$result.y <- factor(combined_data$result.y, levels = c("win", "lose", "draw"))
+
+# Check unique values in result.y
+unique(model_data$result.y)
+
+# Check for missing values in result.y
+sum(is.na(model_data$result.y))
+
+# Write combined_data to a CSV file
+#write.csv(combined_data, file = "combined_data.csv", row.names = FALSE)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Sample size for training data
+train_size <- floor(0.7 * nrow(combined_data))
+
+# Generate random indices for training data
+train_indices <- sample(seq_len(nrow(combined_data)), size = train_size)
+
+# Create training and test datasets
+train_data <- combined_data[train_indices, ]
+test_data <- combined_data[-train_indices, ]
+
+# Fit the model using training data
+library(nnet)
+
+# Check unique values in result.y in train_data
+unique(train_data$result.y)
+
+# Check if the "win" category is present in the model
+"draw" %in% levels(train_data$result.y)
+
+# Set the reference category to "win"
+train_data$result.y <- relevel(train_data$result.y, ref = "draw")
+
+# Fit the multinomial logistic regression model
+model <- multinom(result.y ~ home_team_score + away_team_score + goals_for,
+                  data = train_data)
+
+# Predict on test data
+predictions <- predict(model, newdata = test_data)
+
+# Check levels of result.y after releveling
+levels(train_data$result.y)
+
+# Summary of the model
+summary(model)
+
+
+
+
+
+
+
+
+
+
+
+
+
