@@ -145,10 +145,9 @@ levels(train_data$result.y)
 summary(model)
 
 
-#Text Mining 
+# Qualitative Analysis
 
-# 4. Qualitative Analysis
-# Example: Text mining on player names to identify common nationalities
+# Text mining on player names to identify common nationalities
 player_nationalities <- combined_data %>%
   select(player_id.x, family_name.x, given_name.x) %>%
   distinct() %>%
@@ -170,7 +169,6 @@ nationality_counts <- table(player_nationalities$nationality)
 # Create a data frame for plotting
 nationality_data <- data.frame(nationality = names(nationality_counts),
                                count = as.numeric(nationality_counts))
-
 # Plotting an interactive bar chart
 plot <- plot_ly(data = nationality_data, x = ~nationality, y = ~count, type = "bar", 
                 marker = list(color = 'rgba(144, 238, 144, .6)')) %>%
@@ -180,8 +178,6 @@ plot <- plot_ly(data = nationality_data, x = ~nationality, y = ~count, type = "b
 
 # Display the interactive plot
 plot
-
-
 
 # For qualitative analysis, let's analyze the distribution of player positions using a pie chart
 position_distribution <- combined_data %>%
@@ -201,7 +197,7 @@ plot <- plot_ly(data = position_distribution, labels = ~position_name, values = 
 htmlwidgets::saveWidget(plot, "distinct_position_distribution_pie_chart.html")
 
 
-# For qualitative analysis, let's analyze the distribution of player positions using a bar chart
+# Distribution of player positions using a bar chart
 position_distribution <- combined_data %>%
   group_by(position_name) %>%
   summarise(distinct_player_count = n_distinct(player_id.x)) %>%
@@ -253,34 +249,54 @@ print(paste("Total Goals Scored:", total_goals))
 
 names(combined_data)
 
-#Geographical Data Analysis 
 
-# Load required libraries
-library(leaflet)
-library(maps)
+# Install and load required packages
+install.packages("tm")
+install.packages("wordcloud")
+install.packages("RColorBrewer")
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
 
-# Load the world map
-world_map <- map_data("world")
+# Combine text from multiple columns into a single corpus
+text_corpus <- paste(combined_data$match_name.x, combined_data$stadium_name.x, combined_data$city_name.x, combined_data$country_name.x, combined_data$team_name.x, combined_data$team_name.y, combined_data$player_team_name)
 
-# Extract country names and their corresponding latitude and longitude coordinates from world_map
-country_data <- data.frame(
-  country_name = world_map$region,
-  latitude = world_map$lat,
-  longitude = world_map$long
-)
+# Create a corpus
+docs <- Corpus(VectorSource(text_corpus))
 
-# Merge with combined_data to add latitude and longitude information
-combined_data_with_coords <- merge(combined_data, country_data, by.x = "country_name.x", by.y = "country_name")
+# Clean the text
+docs <- docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english"))
 
-# Create a Leaflet map using combined_data_with_coords
-map <- leaflet(data = combined_data_with_coords) %>%
-  addTiles() %>%
-  addMarkers(~latitude, ~longitude, popup = ~paste("Country: ", country_name.x, "<br>",
-                                                   "Match Name: ", match_name.x)) %>%
-  addMeasure(primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters")
+# Create a document-term matrix
+dtm <- DocumentTermMatrix(docs)
 
-# Print the map to display it
-print(map)
+# Convert the matrix to a data frame
+dtm_df <- as.data.frame(as.matrix(dtm))
+
+# Compute word frequencies
+word_freq <- colSums(dtm_df)
+
+# Sort words by frequency
+sorted_word_freq <- sort(word_freq, decreasing = TRUE)
+
+# Create a word cloud
+wordcloud(words = names(sorted_word_freq), freq = sorted_word_freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+
+# Extract player nationalities
+player_nationalities <- c(combined_data$player_team_name, combined_data$team_name.x, combined_data$team_name.y)
+
+# Create a word cloud of player nationalities
+wordcloud(player_nationalities, 
+          min.freq = 5,
+          scale = c(5, 0.5),
+          colors = brewer.pal(8, "Dark2"),
+          random.order = TRUE,
+          main = "Player Nationalities Word Cloud")
 
 
 
