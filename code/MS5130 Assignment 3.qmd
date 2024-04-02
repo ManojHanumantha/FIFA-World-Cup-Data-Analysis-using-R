@@ -4,24 +4,62 @@ author: "Manoj Hanumantha"
 format: html
 ---
 
-```{r}
+**FIFA World Cup Data Analysis**
 
+Install and load the necessary packages and libraries:
+
+```{r}
+#| label: load packages & load libraries
+#| output: FALSE
 options(repos = "https://cloud.r-project.org")  # Set CRAN mirror
 install.packages('readr')
 install.packages('tidyverse')
+install.packages("ISLR")
+install.packages("gam")
+install.packages("interactions")
+library(readr)
 library(tidyr)
 library(dplyr)
 library(leaflet)
 library(plotly)
 library(ggplot2)
 library(forcats)
+library(gam)
+library(ISLR)
+library(interactions)
+```
 
-# Load datasets
+Check and set the present working directory to the location where the datasets are present:
+
+```{r}
+#| label: set directory
+# Check the present working directory
+getwd()
+
+# Set the working directory to the location where the datasets are present
+setwd("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3/FIFA")
+```
+
+**Step1: Data Preparation:**
+
+Import the datasets matches, team_appearances, player_appearances and goals using readr package:
+
+```{r}
+#| label: import datasets
+#| output: FALSE
+#Import the datasets
 matches <- read.csv("matches.csv")
 team_appearances <- read.csv("team_appearances.csv")
 player_appearances <- read.csv("player_appearances.csv")
 goals <- read.csv("goals.csv")
+```
 
+
+Combine the datasets matches, team_appearances, player_appearances and goals using common column match_id present in all four datasets:
+
+```{r}
+#| label: combine datasets
+#| output: FALSE
 # Combine datasets using common columns
 combined_data <- matches %>%
   left_join(team_appearances, by = "match_id") %>%
@@ -29,18 +67,119 @@ combined_data <- matches %>%
   left_join(goals, by = "match_id")
 
 View(combined_data)
+head(combined_data)
+str(combined_data)
+summary(combined_data)
+```
 
-# Unique question: Can we predict the outcome of football matches based on team performances and player appearances?
+**Step 2: Exploratory Data Analysis:**
 
-# Model fitting
-model <- glm(result ~ goals_for + goals_against + goal_differential + win + lose + draw, data = combined_data, family = binomial)
-
-# Summary of the model
-summary(model)
+```{r}
+#| output: FALSE
+# Exploratory Data Analysis (EDA)
+install.packages("corrplot")
+library(corrplot)
+install.packages("corrplot")
+library(corrplot)
 
 ```
 
+```{r}
+# Check for missing values
+missing_values <- colSums(is.na(combined_data))
+print(missing_values)
 
+```
 
+```{r}
+# Distribution of home_team_score and away_team_score
+plot <- ggplot(combined_data, aes(x = home_team_score, y = away_team_score)) +
+  geom_point() +
+  labs(x = "Home Team Score", y = "Away Team Score", title = "Distribution of Home and Away Team Scores") +
+  theme_minimal()
+plotly::ggplotly(plot)
 
+```
 
+The above scatter plot of "Distribution of Home and Away Team Scores" presents the following observations:
+
+- The data points are widely dispersed across the plot, indicating a variety of score combinations for home and away teams.
+- The range for the home team score is 0 to 10, while the away team score ranges from 0 to 6.
+- The plot suggests that both high and low scores are possible for either team, regardless of whether they are playing at home or away.
+
+```{r}
+# Correlation matrix correlation matrix of match statistics including home_team_score, away_team_score, goals_for, and goals_against.
+correlation_matrix <- cor(combined_data[, c("home_team_score", "away_team_score", "goals_for", "goals_against")])
+corrplot(correlation_matrix, method = "color")
+```
+
+The above correlation matrix for match statistics provides several key insights:
+
+- *Home Team Score and Goals For:* There is a strong positive correlation, indicating that as the home team scores increase, the goals for also tend to increase. This suggests that the home team’s offensive performance is a significant contributor to their scoring.
+
+- *Home Team Score and Goals Against:* A negative correlation is observed, meaning that as the home team scores more, they tend to concede fewer goals. This could imply effective defensive play or control of the game when the home team is leading.
+
+- *Away Team Score and Goals Against:* There is a positive correlation, suggesting that when the away team scores, the goals against them are also higher. This might reflect a more open game where both teams are scoring.
+
+- *Away Team Score and Goals For:* A negative correlation is observed, which could indicate that when the away team is scoring, the home team’s goals for are lower, possibly due to the away team’s defensive strategy.
+
+- **Goals For and Goals Against:** These are negatively correlated, which is expected as teams that score more often concede less and vice versa.
+
+```{r}
+# Boxplot of home_team_score and away_team_score by result
+plot <- ggplot(combined_data, aes(x = result.x, y = home_team_score)) +
+  geom_boxplot() +
+  labs(x = "Result", y = "Home Team Score", title = "Boxplot of Home Team Score by Result") +
+  theme_minimal()
+plotly::ggplotly(plot)
+
+plot <- ggplot(combined_data, aes(x = result.x, y = away_team_score)) +
+  geom_boxplot() +
+  labs(x = "Result", y = "Away Team Score", title = "Boxplot of Away Team Score by Result") +
+  theme_minimal()
+plotly::ggplotly(plot)
+```
+
+Combining both the home and away team score box plots by match results, presents the following observations:
+
+- *Home Team Wins:* Home teams tend to score significantly higher, with a median score around 3, when they win. Away teams, on the other hand, score much less in their losses, with a median score around 1.
+
+- *Away Team Wins:* Away teams have a median score of about 2 when they win, indicating that they don’t need to score as many goals as home teams do to win. Home teams typically score very low, with a median score around 1, when they lose.
+
+- *Draws:* Both home and away teams have a median score of around 2 in draws, suggesting a more balanced outcome in terms of scoring.
+
+- *Score Range and Variability:* Home teams show a wider range of scores and greater variability, especially in games they win, which is indicated by the presence of several outliers. Away teams generally have a narrower score range across all results.
+
+- *Outliers:* There are outliers present in all categories for both home and away teams, indicating occasional matches with unusually high scores.
+
+These observations suggest that home teams have a more pronounced advantage in scoring, particularly in matches they win. Away teams, while they tend to score fewer goals, can still secure wins with fewer goals scored. Draws tend to be more evenly matched in terms of scoring for both teams. The presence of outliers in both plots indicates that while there are general trends, individual matches can have unexpected outcomes.
+
+```{r}
+# Histograms to check normality of predictor variables
+histograms <- combined_data %>%
+  select(home_team_score, away_team_score, goals_for, goals_against) %>%
+  gather() %>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 20, fill = "skyblue", color = "black", alpha = 0.8) +
+  facet_wrap(~key, scales = "free") +
+  labs(x = "Value", y = "Frequency", title = "Histograms of Predictor Variables") +
+  theme_minimal()
+
+plotly::ggplotly(histograms)
+```
+
+The Histograms show the distribution of four predictor variables: away_team_score, goals_against, goals_for, and home_team_score. 
+Below are some observations that can be made from the histograms:
+
+**Skewness:**
+
+- *Away_team_score:* The histogram for away_team_score is skewed to the right. This means that there are more games with lower away team scores and fewer games with very high away team scores.
+- *Goals_against:* The histogram for goals_against is also skewed to the right, but to a lesser extent than away_team_score. This suggests that there are more games with fewer goals scored against a team and fewer games with very high goals scored against a team.
+- *Goals_for:* The histogram for goals_for is also skewed to the right, but less so than away_team_score. This suggests that there are more games with fewer goals scored by a team and fewer games with very high goals scored by a team.
+- *Home_team_score:* The histogram for home_team_score is somewhat symmetrical, with a slight skew to the right. This suggests that the distribution of home team scores is more evenly spread out, but there are still slightly more games with lower home team scores.
+
+The histograms for all four variables appear to have a single mode, which is the most frequent value.
+
+Overall, the histograms suggest that the data is not perfectly normally distributed. All four variables have some degree of positive skew, meaning that there are more frequent lower values than higher values. This is a common finding in sports data, where scores tend to be clustered at the low end but can vary widely on the high end.
+
+```
