@@ -241,20 +241,20 @@ htmlwidgets::saveWidget(plot2, "player_position_distribution.html")
 # Goal Distribution by Minute using a line chart
 # Grouping data by match_id, minute_label, and goal_id to count distinct goals
 goal_distribution <- combined_data %>%
-  filter(!is.na(minute_label)) %>%
-  group_by(match_id, minute_label, goal_id) %>%
+  filter(!is.na(minute_regulation)) %>%
+  group_by(match_id, minute_regulation, goal_id) %>%
   summarise(goals_count = n_distinct(goal_id))
 
 # Grouping data by minute_label to sum up the goals count for each minute
 goal_distribution <- goal_distribution %>%
-  group_by(minute_label) %>%
+  group_by(minute_regulation) %>%
   summarise(goals_count = sum(goals_count))
 
 # Create hover text
-hover_text <- paste("Minute = ", goal_distribution$minute_label, "<br>Number of Goals = ", goal_distribution$goals_count)
+hover_text <- paste("Minute = ", goal_distribution$minute_regulation, "<br>Number of Goals = ", goal_distribution$goals_count)
 
 # Plotting goal distribution by minute
-plot3 <- plot_ly(x = ~goal_distribution$minute_label, y = ~goal_distribution$goals_count, 
+plot3 <- plot_ly(x = ~goal_distribution$minute_regulation, y = ~goal_distribution$goals_count, 
                  type = "scatter", mode = "lines+markers",
                  marker = list(color = 'rgba(65, 105, 225, .6)'), 
                  line = list(shape = "spline"),
@@ -272,7 +272,7 @@ total_goals <- sum(goal_distribution$goals_count)
 # Print total sum of goals
 print(paste("Total Goals Scored:", total_goals))
 
-#Word Cloud
+#Word Cloud Generation using Match Data
 install.packages("tm")
 install.packages("wordcloud")
 install.packages("RColorBrewer")
@@ -319,6 +319,8 @@ wordcloud(player_nationalities,
           colors = brewer.pal(8, "Dark2"),
           random.order = TRUE,
           main = "Player Nationalities Word Cloud")
+
+
 
 
 
