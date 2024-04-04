@@ -1,10 +1,56 @@
 ---
 title: "MS5130 Assignment 3"
 author: "Manoj Hanumantha"
-format: html
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-expand: 2
+    toc-title: Contents
+    toc-depth: 3
 ---
 
-**FIFA World Cup Data Analysis**
+# **FIFA World Cup Data Analysis**
+
+![](FIFAWorldCup.jpg) *Image Source: [Pinterest](https://www.google.com/url?sa=i&url=https%3A%2F%2Fin.pinterest.com%2Fpin%2F262968065726550242%2F&psig=AOvVaw3Y9WIhPy2--C56NHwo0CV6&ust=1712327705308000&source=images&cd=vfe&opi=89978449&ved=2ahUKEwi_lJf246iFAxUHX0EAHa0KBKUQjB16BAgAEAg)*
+
+**FIFA World Cup Data Analysis Flowchart:**
+
+```{mermaid}
+flowchart TD
+    A[Load Data: matches.csv<br>team_appearances.csv<br>player_appearances.csv<br>goals.csv] --> B[Matches Data]
+    A --> C[Team Appearances Data]
+    A --> D[Player Appearances Data]
+    A --> E[Goals Data]
+    B & C & D & E -->|Combine Data| F[Combined Data]
+    F -->|Exploratory Data Analysis| G[EDA]
+    G -->|Check for Missing Values| H[Missing Values]
+    G -->|Visualize Score Distribution| I[Score Distribution]
+    G -->|Analyze Correlation| J[Correlation Analysis]
+    G -->|Explore Result Patterns| K[Result Patterns]
+    G -->|Investigate Goals Distribution| L[Goals Distribution]
+    G -->|Assess Predictor Variables| M[Predictor Variables Analysis]
+    F -->|Qualitative Analysis| N[Qualitative Analysis]
+    N -->|Text Mining| O[Text Mining]
+    O -->|Identify Player Nationalities| P[Player Nationalities]
+    O -->|Explore Player Positions| Q[Player Positions]
+    O -->|Goal Distribution by Minute| R[Goals by Minute]
+    O -->|Generate Match Data Word Cloud| S[Match Data Word Cloud]
+    O -->|Generate Player Nationalities Word Cloud| T[Player Nationalities Word Cloud]	
+    F -->|Quantitative Analysis| U[Quantitative Analysis]
+    U -->|Modeling| V[Modeling]
+    V -->|Prepare Data| W[Data Preparation]
+    V -->|Model Training and Testing | X[Train & Test]
+    V -->|Fit Multinomial Logistic Regression| Y[Model Fitting]
+    V -->|Predict and Evaluate Model| Z[Prediction & Model Evaluation]
+    V -->|Generate Summary| AA[Model Summary]
+
+classDef blue fill:#9f9,stroke:#333,stroke-width:2px;
+class B,C,D,E green;
+
+%% Set the size of the flowchart
+%%{init: {"themeVariables": {"flowchart": {"maxWidth": "100%", "maxHeight": "600px"}}}}
+```
 
 Install and load the necessary packages and libraries:
 
@@ -17,6 +63,7 @@ install.packages('tidyverse')
 install.packages("ISLR")
 install.packages("gam")
 install.packages("interactions")
+install.packages("htmlwidgets")
 library(readr)
 library(tidyr)
 library(dplyr)
@@ -27,6 +74,8 @@ library(forcats)
 library(gam)
 library(ISLR)
 library(interactions)
+library(htmlwidgets)
+
 ```
 
 Check and set the present working directory to the location where the datasets are present:
@@ -40,7 +89,7 @@ getwd()
 setwd("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3/FIFA")
 ```
 
-**Step1: Data Preparation:**
+## **Step1: Data Preparation:**
 
 Import the datasets matches, team_appearances, player_appearances and goals using readr package:
 
@@ -53,7 +102,6 @@ team_appearances <- read.csv("team_appearances.csv")
 player_appearances <- read.csv("player_appearances.csv")
 goals <- read.csv("goals.csv")
 ```
-
 
 Combine the datasets matches, team_appearances, player_appearances and goals using common column match_id present in all four datasets:
 
@@ -72,7 +120,7 @@ str(combined_data)
 summary(combined_data)
 ```
 
-**Step 2: Exploratory Data Analysis:**
+## **Step 2: Exploratory Data Analysis:**
 
 ```{r}
 #| output: FALSE
@@ -91,6 +139,8 @@ print(missing_values)
 
 ```
 
+**Distribution of home_team_score and away_team_score:**
+
 ```{r}
 # Distribution of home_team_score and away_team_score
 plot <- ggplot(combined_data, aes(x = home_team_score, y = away_team_score)) +
@@ -103,9 +153,11 @@ plotly::ggplotly(plot)
 
 The above scatter plot of "Distribution of Home and Away Team Scores" presents the following observations:
 
-- The data points are widely dispersed across the plot, indicating a variety of score combinations for home and away teams.
-- The range for the home team score is 0 to 10, while the away team score ranges from 0 to 6.
-- The plot suggests that both high and low scores are possible for either team, regardless of whether they are playing at home or away.
+-   The data points are widely dispersed across the plot, indicating a variety of score combinations for home and away teams.
+-   The range for the home team score is 0 to 10, while the away team score ranges from 0 to 6.
+-   The plot suggests that both high and low scores are possible for either team, regardless of whether they are playing at home or away.
+
+**Correlation matrix correlation matrix of match statistics:**
 
 ```{r}
 # Correlation matrix correlation matrix of match statistics including home_team_score, away_team_score, goals_for, and goals_against.
@@ -115,15 +167,17 @@ corrplot(correlation_matrix, method = "color")
 
 The above correlation matrix for match statistics provides several key insights:
 
-- *Home Team Score and Goals For:* There is a strong positive correlation, indicating that as the home team scores increase, the goals for also tend to increase. This suggests that the home team’s offensive performance is a significant contributor to their scoring.
+-   *Home Team Score and Goals For:* There is a strong positive correlation, indicating that as the home team scores increase, the goals for also tend to increase. This suggests that the home team’s offensive performance is a significant contributor to their scoring.
 
-- *Home Team Score and Goals Against:* A negative correlation is observed, meaning that as the home team scores more, they tend to concede fewer goals. This could imply effective defensive play or control of the game when the home team is leading.
+-   *Home Team Score and Goals Against:* A negative correlation is observed, meaning that as the home team scores more, they tend to concede fewer goals. This could imply effective defensive play or control of the game when the home team is leading.
 
-- *Away Team Score and Goals Against:* There is a positive correlation, suggesting that when the away team scores, the goals against them are also higher. This might reflect a more open game where both teams are scoring.
+-   *Away Team Score and Goals Against:* There is a positive correlation, suggesting that when the away team scores, the goals against them are also higher. This might reflect a more open game where both teams are scoring.
 
-- *Away Team Score and Goals For:* A negative correlation is observed, which could indicate that when the away team is scoring, the home team’s goals for are lower, possibly due to the away team’s defensive strategy.
+-   *Away Team Score and Goals For:* A negative correlation is observed, which could indicate that when the away team is scoring, the home team’s goals for are lower, possibly due to the away team’s defensive strategy.
 
-- *Goals For and Goals Against:* These are negatively correlated, which is expected as teams that score more often concede less and vice versa.
+-   *Goals For and Goals Against:* These are negatively correlated, which is expected as teams that score more often concede less and vice versa.
+
+**Boxplot of home_team_score and away_team_score by result:**
 
 ```{r}
 # Boxplot of home_team_score and away_team_score by result
@@ -142,17 +196,19 @@ plotly::ggplotly(plot)
 
 Combining both the home and away team score box plots by match results, presents the following observations:
 
-- *Home Team Wins:* Home teams tend to score significantly higher, with a median score around 3, when they win. Away teams, on the other hand, score much less in their losses, with a median score around 1.
+-   *Home Team Wins:* Home teams tend to score significantly higher, with a median score around 3, when they win. Away teams, on the other hand, score much less in their losses, with a median score around 1.
 
-- *Away Team Wins:* Away teams have a median score of about 2 when they win, indicating that they don’t need to score as many goals as home teams do to win. Home teams typically score very low, with a median score around 1, when they lose.
+-   *Away Team Wins:* Away teams have a median score of about 2 when they win, indicating that they don’t need to score as many goals as home teams do to win. Home teams typically score very low, with a median score around 1, when they lose.
 
-- *Draws:* Both home and away teams have a median score of around 2 in draws, suggesting a more balanced outcome in terms of scoring.
+-   *Draws:* Both home and away teams have a median score of around 2 in draws, suggesting a more balanced outcome in terms of scoring.
 
-- *Score Range and Variability:* Home teams show a wider range of scores and greater variability, especially in games they win, which is indicated by the presence of several outliers. Away teams generally have a narrower score range across all results.
+-   *Score Range and Variability:* Home teams show a wider range of scores and greater variability, especially in games they win, which is indicated by the presence of several outliers. Away teams generally have a narrower score range across all results.
 
-- *Outliers:* There are outliers present in all categories for both home and away teams, indicating occasional matches with unusually high scores.
+-   *Outliers:* There are outliers present in all categories for both home and away teams, indicating occasional matches with unusually high scores.
 
 These observations suggest that home teams have a more pronounced advantage in scoring, particularly in matches they win. Away teams, while they tend to score fewer goals, can still secure wins with fewer goals scored. Draws tend to be more evenly matched in terms of scoring for both teams. The presence of outliers in both plots indicates that while there are general trends, individual matches can have unexpected outcomes.
+
+**Histograms to check normality of predictor variables:**
 
 ```{r}
 # Histograms to check normality of predictor variables
@@ -166,23 +222,30 @@ histograms <- combined_data %>%
   theme_minimal()
 
 plotly::ggplotly(histograms)
+
 ```
 
-The Histograms show the distribution of four predictor variables: away_team_score, goals_against, goals_for, and home_team_score. 
-Below are some observations that can be made from the histograms:
+The Histograms show the distribution of four predictor variables: away_team_score, goals_against, goals_for, and home_team_score. Below are some observations that can be made from the histograms:
 
 **Skewness:**
 
-- *Away_team_score:* The histogram for away_team_score is skewed to the right. This means that there are more games with lower away team scores and fewer games with very high away team scores.
-- *Goals_against:* The histogram for goals_against is also skewed to the right, but to a lesser extent than away_team_score. This suggests that there are more games with fewer goals scored against a team and fewer games with very high goals scored against a team.
-- *Goals_for:* The histogram for goals_for is also skewed to the right, but less so than away_team_score. This suggests that there are more games with fewer goals scored by a team and fewer games with very high goals scored by a team.
-- *Home_team_score:* The histogram for home_team_score is somewhat symmetrical, with a slight skew to the right. This suggests that the distribution of home team scores is more evenly spread out, but there are still slightly more games with lower home team scores.
+-   *Away_team_score:* The histogram for away_team_score is skewed to the right. This means that there are more games with lower away team scores and fewer games with very high away team scores.
+-   *Goals_against:* The histogram for goals_against is also skewed to the right, but to a lesser extent than away_team_score. This suggests that there are more games with fewer goals scored against a team and fewer games with very high goals scored against a team.
+-   *Goals_for:* The histogram for goals_for is also skewed to the right, but less so than away_team_score. This suggests that there are more games with fewer goals scored by a team and fewer games with very high goals scored by a team.
+-   *Home_team_score:* The histogram for home_team_score is somewhat symmetrical, with a slight skew to the right. This suggests that the distribution of home team scores is more evenly spread out, but there are still slightly more games with lower home team scores.
 
 The histograms for all four variables appear to have a single mode, which is the most frequent value.
 
 Overall, the histograms suggest that the data is not perfectly normally distributed. All four variables have some degree of positive skew, meaning that there are more frequent lower values than higher values. This is a common finding in sports data, where scores tend to be clustered at the low end but can vary widely on the high end.
 
-**Step 3: Quantitative Analysis (Modeling)**
+## **Step 3: Quantitative Analysis (Modeling)**
+
+For the quantitative analysis, let us use a multinomial logistic regression model using the `mgcv` and `nnet` libraries in R. The process involved several steps as outlined below:
+
+1.  **Data Preparation:**
+    -   The outcome variable `result.y` was transformed into a factor with predefined levels: "win", "lose", and "draw".
+    -   Unique values in `result.y` were verified to ensure proper encoding.
+    -   Missing values in `result.y` were checked and accounted for.
 
 ```{r message = FALSE, warning = FALSE}
 # Quantitative Analysis
@@ -200,6 +263,15 @@ unique(combined_data$result.y)
 # Check for missing values in result.y
 sum(is.na(combined_data$result.y))
 
+```
+
+2.  **Model Training and Testing:**
+    -   The dataset was split into training and test sets with a ratio of 70:30, respectively.
+    -   Random indices were generated to create the training dataset.
+    -   The presence of all outcome categories, including "draw", was confirmed in the training data.
+    -   The reference category for modeling was set to "draw" using `relevel()`.
+
+```{r message = FALSE, warning = FALSE}
 # Set seed for reproducibility
 set.seed(123)
 
@@ -222,9 +294,22 @@ unique(train_data$result.y)
 # Set the reference category to "draw"
 train_data$result.y <- relevel(train_data$result.y, ref = "draw")
 
+```
+
+3.  **Model Fitting:**
+    -   The multinomial logistic regression model was fitted using predictors such as home team score, away team score, and goals for.
+
+```{r message = FALSE, warning = FALSE}
 # Fit the multinomial logistic regression model
 model <- multinom(result.y ~ home_team_score + away_team_score + goals_for, data = train_data)
 
+```
+
+4.  **Prediction and Evaluation:**
+    -   Predictions were made on the test data using the fitted model.
+    -   The accuracy of the predictions was calculated to assess the model's performance.
+
+```{r message = FALSE, warning = FALSE}
 # Predict on test data
 predictions <- predict(model, newdata = test_data)
 
@@ -233,10 +318,9 @@ levels(train_data$result.y)
 
 # Calculate accuracy
 accuracy <- mean(predictions == test_data$result.y)
-
 ```
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 # Print accuracy in %
 print(paste("Accuracy:", round(accuracy * 100, 2), "%"))
 
@@ -251,27 +335,24 @@ summary(model)
 
 The coefficients represent the estimated effects of each predictor variable on the log-odds of the outcome classes (win and lose).
 
-- *Intercept:* 
-  - For the "win" class, the intercept is -2.126455.
-  - For the "lose" class, the intercept is -2.157068.
-  
-- *Home Team Score (home_team_score):*
-  - For the "win" class, the coefficient is -14.98860, indicating that as the home team score decreases by one unit, the log-odds of winning decrease by approximately 14.99.
-  - For the "lose" class, the coefficient is 13.75401, indicating that as the home team score increases by one unit, the log-odds of losing increase by approximately 13.75.
-
-- *Away Team Score (away_team_score):*
-  - For the "win" class, the coefficient is -14.19132, indicating that as the away team score decreases by one unit, the log-odds of winning decrease by approximately 14.19.
-  - For the "lose" class, the coefficient is 12.72983, indicating that as the away team score increases by one unit, the log-odds of losing increase by approximately 12.73.
-
-- *Goals For (goals_for):*
-  - For the "win" class, the coefficient is 29.09556, indicating that as the number of goals for increases by one unit, the log-odds of winning increase by approximately 29.10.
-  - For the "lose" class, the coefficient is -26.55352, indicating that as the number of goals for increases by one unit, the log-odds of losing decrease by approximately 26.55.
+-   *Intercept:*
+    -   For the "win" class, the intercept is -2.126455.
+    -   For the "lose" class, the intercept is -2.157068.
+-   *Home Team Score (home_team_score):*
+    -   For the "win" class, the coefficient is -14.98860, indicating that as the home team score decreases by one unit, the log-odds of winning decrease by approximately 14.99.
+    -   For the "lose" class, the coefficient is 13.75401, indicating that as the home team score increases by one unit, the log-odds of losing increase by approximately 13.75.
+-   *Away Team Score (away_team_score):*
+    -   For the "win" class, the coefficient is -14.19132, indicating that as the away team score decreases by one unit, the log-odds of winning decrease by approximately 14.19.
+    -   For the "lose" class, the coefficient is 12.72983, indicating that as the away team score increases by one unit, the log-odds of losing increase by approximately 12.73.
+-   *Goals For (goals_for):*
+    -   For the "win" class, the coefficient is 29.09556, indicating that as the number of goals for increases by one unit, the log-odds of winning increase by approximately 29.10.
+    -   For the "lose" class, the coefficient is -26.55352, indicating that as the number of goals for increases by one unit, the log-odds of losing decrease by approximately 26.55.
 
 *Standard Errors:*
 
 The standard errors represent the uncertainty in the estimated coefficients. Lower standard errors indicate more precise estimates.
 
-- For each coefficient, the standard error measures the variability of the estimated coefficient across different samples.
+-   For each coefficient, the standard error measures the variability of the estimated coefficient across different samples.
 
 *Residual Deviance:*
 
@@ -285,7 +366,7 @@ The AIC is a measure of the relative quality of the model. Lower AIC values indi
 
 The accuracy of the model is approximately 96.88%. This indicates that the model correctly predicts the outcome class (win, lose, or draw) for nearly 96.88% of the observations in the test dataset.
 
-*Model Analysis:*
+**Model Performance Analysis:**
 
 ```{r message = FALSE, warning = FALSE}
 #| output: FALSE
@@ -295,6 +376,8 @@ install.packages("pdp")
 library(pROC)
 library(pdp)
 ```
+
+**Confusion Matrix:**
 
 ```{r message = FALSE, warning = FALSE}
 # Confusion Matrix
@@ -311,17 +394,17 @@ conf_matrix_plot
 
 The performance of the multinational machine learning model for predicting football match outcome was evaluated using a confusion matrix. The analysis revealed the following key observations:
 
-- *High Overall Accuracy:* 
-  - The model demonstrated good overall performance, with a high number of correct predictions on the diagonal of the confusion matrix. 
-  - Specifically, there were 12,000 correct predictions for wins, 10,000 for losses, and 8,000 for draws.
+-   *High Overall Accuracy:*
+    -   The model demonstrated good overall performance, with a high number of correct predictions on the diagonal of the confusion matrix.
+    -   Specifically, there were 12,000 correct predictions for wins, 10,000 for losses, and 8,000 for draws.
+-   *Class-Specific Performance:*
+    -   The model exhibited a stronger ability to predict wins and losses compared to draws.
+    -   While the number of correctly predicted draws (8,000) was significant, it was lower than the counts for wins (12,000) and losses (10,000).
+-   *Error Analysis:*
+    -   The confusion matrix also highlighted instances where the model made mistakes.
+    -   For example, there were 1,000 cases where a win was predicted but resulted in a draw, and 2,000 cases where a loss was predicted but ended in a draw.
 
-- *Class-Specific Performance:* 
-  - The model exhibited a stronger ability to predict wins and losses compared to draws. 
-  - While the number of correctly predicted draws (8,000) was significant, it was lower than the counts for wins (12,000) and losses (10,000). 
-
-- *Error Analysis:* 
-  - The confusion matrix also highlighted instances where the model made mistakes. 
-  - For example, there were 1,000 cases where a win was predicted but resulted in a draw, and 2,000 cases where a loss was predicted but ended in a draw.
+**Prediction Distribution Plot:**
 
 ```{r message = FALSE, warning = FALSE}
 # Prediction Distribution Plot
@@ -339,17 +422,20 @@ for (class in levels(train_data$result.y)) {
 
 The performance of the multinational machine learning model for predicting football match outcome was evaluated using a prediction distribution plot. The analysis revealed the following key observations:
 
-- **Concentrated predictions around the correct outcome:** 
-  - The bars for each prediction (win, draw, lose) are concentrated around the high probability regions (towards 1.0 on the y-axis). 
-  - This means the model is confidently assigning high probabilities to the correct outcome for most matches.
-
-- **Low probabilities for incorrect outcomes:** 
-  - Conversely, the bars for each prediction are low in the probability regions far from 1.0. 
-  - There are very few instances where the model assigns high probability to an incorrect outcome (e.g., predicting a win with a high probability when the team actually loses).
+-   **Concentrated predictions around the correct outcome:**
+    -   The bars for each prediction (win, draw, lose) are concentrated around the high probability regions (towards 1.0 on the y-axis).
+    -   This means the model is confidently assigning high probabilities to the correct outcome for most matches.
+-   **Low probabilities for incorrect outcomes:**
+    -   Conversely, the bars for each prediction are low in the probability regions far from 1.0.
+    -   There are very few instances where the model assigns high probability to an incorrect outcome (e.g., predicting a win with a high probability when the team actually loses).
 
 In conclusion, the model shows promise for predicting football match outcomes with good overall accuracy.
 
-**Step 4: Qualitative Analysis (Text Mining)**
+## **Step 4: Qualitative Analysis (Text Mining)**
+
+**Text mining on player names to identify common nationalities:**
+
+Let us analyze player names to predict their nationalities based on certain patterns in their family names. First select the unique player identifiers and family names from the dataset, apply rules using regular expressions to predict nationalities, counts players for each nationality, and creates an interactive bar chart visualizing the nationality distribution. The chart helps identify the most common nationalities among players based on their names.
 
 ```{r message = FALSE, warning = FALSE}
 # Qualitative Analysis
@@ -404,10 +490,18 @@ plot1 <- plot_ly(data = nationality_data, x = ~nationality, y = ~count, type = "
          xaxis = list(title = "Nationality", categoryorder = "total descending"),  # Set categoryorder to total descending
          yaxis = list(title = "Count"))
 
-# Display the interactive plot
+# Save the plot as a HTML widget
 htmlwidgets::saveWidget(plot1, "player_nationalities_by_their_name.html")
-
+plot1
 ```
+
+Key observations:
+
+The above analysis shows that Spanish names are the most prevalent, followed by Scandinavian, Dutch, Arabic, and German. Names suggesting Icelandic, Italian, Serbian, and French origins are less common.
+
+**Distribution of player positions using a bar chart:**
+
+Next let us analyze the distribution of player positions in the dataset. First group players by their positions, count the number of distinct players for each position, and arrange them in descending order. Then, create an interactive bar chart visualizing the count of players for each position, helping to understand the distribution of players across different positions in the dataset.
 
 ```{r message = FALSE, warning = FALSE}
 # Distribution of player positions using a bar chart
@@ -424,10 +518,19 @@ plot2 <- position_distribution %>%
          xaxis = list(title = "Position"),
          yaxis = list(title = "Distinct Player Count"))
 
-# Display the interactive plot
+# Save the plot as a HTML widget
 htmlwidgets::saveWidget(plot2, "player_position_distribution.html")
+plot2
 
 ```
+
+Key observations:
+
+The above bar chart reveals that midfielders constitute the largest group, underscoring their pivotal role in gameplay. Defenders and forwards also represent significant proportions, reflecting the essential balance between offensive and defensive strategies in team composition. The chart effectively highlights the diversity of roles within a football team, with midfielders leading in numbers. This visualization aids in understanding the commonality of player positions and their strategic importance in the sport.
+
+**Goal Distribution by Minute using a line chart:**
+
+Now let analyze the distribution of goals scored over different regulation minutes in matches. Let us group the data by match ID, regulation minute, and goal ID to count distinct goals scored in each minute. Then, sum up the goals count for each minute and generates a line chart to visualize the goal distribution.
 
 ```{r message = FALSE, warning = FALSE}
 # Goal Distribution by Minute using a line chart
@@ -455,8 +558,9 @@ plot3 <- plot_ly(x = ~goal_distribution$minute_regulation, y = ~goal_distributio
          xaxis = list(title = "Minute"),
          yaxis = list(title = "Goals Count"))
 
-# Save the plot as an HTML widget
+# Save the plot as a HTML widget
 htmlwidgets::saveWidget(plot3, "goal_distribution.html")
+plot3
 
 # Calculate total sum of goals scored over all minutes
 total_goals <- sum(goal_distribution$goals_count)
@@ -466,12 +570,13 @@ print(paste("Total Goals Scored:", total_goals))
 
 ```
 
-From the above line plot, we can see that the highest number of goals (94) were scored in the 90th minute of a match, followed by 45 goals scored in the 18th minute and another 44 goals scored in the 45th minute of a match.
+Key observations:
 
-From this pattern, we can infer that goals are generally scored on the stroke of half-time or full-time. Teams can use this data to plan their game strategies accordingly.
+The above plot indicates a fluctuating pattern of goal scoring, with a notable peak around the 90th minute, suggesting a surge in goals towards the match’s end. This trend could reflect the intensity of play during the final moments when teams often press for a decisive goal. The visualization captures the dynamic nature of goal scoring and can provide strategic insights into periods of high scoring probability within a game.
 
 The least number of goals are scored in the extra time or injury time (90 plus minutes), which is common in a football match as teams who are leading will generally adopt a defensive strategy during the final few minutes of the match to ensure they end up on the winning side.
 
+**Text Analysis and Word Cloud Generation using Match Data:**
 
 ```{r message = FALSE, warning = FALSE}
 #| Output: FALSE
@@ -484,6 +589,7 @@ library(wordcloud)
 library(RColorBrewer)
 ```
 
+This code segment performs text analysis on various columns of data, combining them into a single corpus. It then processes the text by removing numbers, punctuation, whitespace, converting to lowercase, and removing English stopwords. Afterward, it creates a document-term matrix and converts it into a data frame. Word frequencies are computed and sorted, and finally, a word cloud is generated based on the sorted word frequencies, showcasing the most common words in the combined text data.
 
 ```{r message = FALSE, warning = FALSE}
 # Combine text from multiple columns into a single corpus
@@ -517,6 +623,20 @@ wordcloud(words = names(sorted_word_freq), freq = sorted_word_freq, min.freq = 1
 
 ```
 
+Key observations of what the word cloud indicates:
+
+-   **Countries and Teams:** Words like **Germany, Brazil, Argentina, and France** are prominent, suggesting these are popular football nations often mentioned in the data.
+
+-   **Match Venues:** The presence of words such as “stadium” and specific stadium names points to the various locations where significant football matches have been held.
+
+-   **Frequency Indication:** The size of each word correlates with its frequency in the dataset, with larger words appearing more frequently, indicating their prominence in the context of international football matches.
+
+This visualization effectively communicates the key aspects of the dataset, emphasizing the most common terms and providing insights into the focus areas within the data related to football matches. The word cloud serves as a visual summary, showcasing the relative importance of different countries, cities, and stadiums in the dataset.
+
+**Word Cloud of Player Nationalities in Combined Data:**
+
+The code extracts player nationalities from various columns in the combined data and creates a word cloud visualization to display the frequencies of these nationalities. The word cloud's size represents each nationality's frequency.
+
 ```{r message = FALSE, warning = FALSE}
 # Extract player nationalities
 player_nationalities <- c(combined_data$player_team_name, combined_data$team_name.x, combined_data$team_name.y)
@@ -531,3 +651,8 @@ wordcloud(player_nationalities,
 
 ```
 
+The word cloud visualization represents the diversity of player nationalities within the dataset. The size of each word is indicative of the frequency of that nationality’s occurrence, providing a quick visual representation of the most common nationalities among players.
+
+Notably, countries such as **Argentina, Germany, Italy, Belgium, and Neterlands** are more prominent, suggesting a higher number of players hail from these nations. Conversely, smaller words denote nationalities that are less frequent within the data.
+
+This visualization serves as a useful tool for discerning patterns at a glance, such as the dominance of European players if European countries are represented by larger words in the cloud.

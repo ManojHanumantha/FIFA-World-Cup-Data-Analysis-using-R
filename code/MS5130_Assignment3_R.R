@@ -4,6 +4,8 @@ install.packages('tidyverse')
 install.packages("ISLR")
 install.packages("gam")
 install.packages("interactions")
+install.packages("htmlwidgets")
+library(htmlwidgets)
 library(readr)
 library(tidyr)
 library(dplyr)
@@ -217,8 +219,11 @@ plot1 <- plot_ly(data = nationality_data, x = ~nationality, y = ~count, type = "
          xaxis = list(title = "Nationality", categoryorder = "total descending"),  # Set categoryorder to total descending
          yaxis = list(title = "Count"))
 
-# Display the interactive plot
+# Save the plot as a html widget
 htmlwidgets::saveWidget(plot1, "player_nationalities_by_their_name.html")
+
+htmlwidgets::includeHTML("C:/Users/Manoj/Desktop/Semester 2 Assignments/Applied Analytics in Business and Society/Assignment 3/FIFA/player_nationalities_by_their_name.html")
+
 
 # Distribution of player positions using a bar chart
 position_distribution <- combined_data %>%
@@ -234,8 +239,10 @@ plot2 <- position_distribution %>%
          xaxis = list(title = "Position"),
          yaxis = list(title = "Distinct Player Count"))
 
-# Display the interactive plot
+# Save the plot as a html widget
 htmlwidgets::saveWidget(plot2, "player_position_distribution.html")
+
+plot2
 
 # Goal Distribution by Minute using a line chart
 # Grouping data by match_id, minute_label, and goal_id to count distinct goals
@@ -262,8 +269,10 @@ plot3 <- plot_ly(x = ~goal_distribution$minute_regulation, y = ~goal_distributio
          xaxis = list(title = "Minute"),
          yaxis = list(title = "Goals Count"))
 
-# Save the plot as an HTML widget
+# Save the plot as a HTML widget
 htmlwidgets::saveWidget(plot3, "goal_distribution.html")
+
+plot3
 
 # Calculate total sum of goals scored over all minutes
 total_goals <- sum(goal_distribution$goals_count)
@@ -318,4 +327,3 @@ wordcloud(player_nationalities,
           colors = brewer.pal(8, "Dark2"),
           random.order = TRUE,
           main = "Player Nationalities Word Cloud")
-
